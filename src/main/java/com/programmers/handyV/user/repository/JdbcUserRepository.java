@@ -1,6 +1,7 @@
 package com.programmers.handyV.user.repository;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,7 +25,7 @@ public class JdbcUserRepository implements UserRepository {
         Map<String, Object> parameterMap = toParameterMap(user);
         int saveCount = namedParameterJdbcTemplate.update(insertSQL, parameterMap);
         if (saveCount == 0) {
-            throw new NoSuchElementException("No user is saved successfully");
+            throw new NoSuchElementException("유저 저장을 실패했습니다.");
         }
         return user;
     }
@@ -36,6 +37,6 @@ public class JdbcUserRepository implements UserRepository {
         parameterMap.put("updatedAt", Timestamp.valueOf(user.getUpdatedAt()));
         parameterMap.put("carNumber", user.getCarFullNumber());
         parameterMap.put("authority", user.getAuthority().name());
-        return parameterMap;
+        return Collections.unmodifiableMap(parameterMap);
     }
 }
