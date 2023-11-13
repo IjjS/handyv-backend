@@ -6,9 +6,9 @@ import java.util.UUID;
 public class Charger {
     private final UUID chargerId;
     private final LocalDateTime createdAt;
+    private final ChargerType chargerType;
     private final UUID stationId;
     private LocalDateTime updatedAt;
-    private ChargerType chargerType;
     private ChargerStatus chargerStatus;
     private LocalDateTime bookedAt;
     private UUID userId;
@@ -63,5 +63,12 @@ public class Charger {
 
     public String getHashName() {
         return getChargerTypeName() + " " + chargerId.toString().substring(0, 4);
+    }
+
+    public void conductBooking(UUID userId) {
+        chargerStatus = ChargerStatus.BOOKED;
+        this.userId = userId;
+        bookedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

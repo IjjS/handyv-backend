@@ -5,13 +5,17 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.programmers.handyV.charger.dto.request.ConductBookingRequest;
 import com.programmers.handyV.charger.dto.request.CreateChargerRequest;
 import com.programmers.handyV.charger.dto.response.ChargerResponse;
+import com.programmers.handyV.charger.dto.response.ConductBookingResponse;
 import com.programmers.handyV.charger.dto.response.CreateChargerResponse;
 import com.programmers.handyV.charger.service.ChargerService;
 
@@ -32,5 +36,10 @@ public class ChargerController {
     @GetMapping
     public ResponseEntity<List<ChargerResponse>> findByStationId(@RequestParam UUID stationId) {
         return ResponseEntity.ok(chargerService.findByStationId(stationId));
+    }
+
+    @PostMapping("/{chargerId}")
+    public ResponseEntity<ConductBookingResponse> conductBooking(@PathVariable UUID chargerId, @ModelAttribute ConductBookingRequest request) {
+        return ResponseEntity.ok(chargerService.conductBooking(chargerId, request));
     }
 }

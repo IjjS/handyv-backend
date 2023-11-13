@@ -1,6 +1,7 @@
 package com.programmers.handyV.user.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.programmers.handyV.user.domain.User;
 import com.programmers.handyV.user.dto.request.CreateUserRequest;
@@ -15,6 +16,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public CreateUserResponse create(CreateUserRequest request) {
         User user = User.createNormalUser(request.frontNumber(), request.backNumber());
         User savedUser = userRepository.save(user);

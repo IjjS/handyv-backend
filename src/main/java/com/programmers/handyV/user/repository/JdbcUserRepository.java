@@ -1,22 +1,43 @@
 package com.programmers.handyV.user.repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.programmers.handyV.common.utils.UUIDConverter;
+import com.programmers.handyV.user.domain.CarNumber;
 import com.programmers.handyV.user.domain.User;
+import com.programmers.handyV.user.domain.UserAuthority;
 
 @Repository
 public class JdbcUserRepository implements UserRepository {
+    private static final RowMapper<User> userRowMapper = (resultSet, i) -> mapToUser(resultSet);
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public JdbcUserRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
+    private static User mapToUser(ResultSet resultSet) throws SQLException {
+        UUID userId = UUIDConverter.from(resultSet.getBytes("user_id"));
+        LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
+        LocalDateTime updatedAt = resultSet.getTimestamp("updated_at").toLocalDateTime();
+        CarNumber carNumber = new CarNumber(resultSet.getString("car_number"));
+        UserAuthority userAuthority = UserAuthority.valueOf(resultSet.getString("authority"));
+        return new User(userId, createdAt, updatedAt, carNumber, userAuthority);
     }
 
     @Override
@@ -28,6 +49,16 @@ public class JdbcUserRepository implements UserRepository {
             throw new NoSuchElementException("유저 저장을 실패했습니다.");
         }
         return user;
+    }
+
+    @Override
+    public Optional<User> findByCarNumber(CarNumber carNumber) {
+        String findByCarNumberSQL = "SELECT * FROM users WHERE car_number = :carNumber";
+        try {
+            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(findByCarNumberSQL, Collections.singletonMap("carNumber", carNumber.getFullNumber()), userRowMapper));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     private Map<String, Object> toParameterMap(User user) {

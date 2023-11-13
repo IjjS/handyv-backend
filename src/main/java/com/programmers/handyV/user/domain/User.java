@@ -10,7 +10,7 @@ public class User {
     private CarNumber carNumber;
     private UserAuthority authority;
 
-    private User(UUID userId, LocalDateTime createdAt, LocalDateTime updatedAt, CarNumber carNumber, UserAuthority authority) {
+    public User(UUID userId, LocalDateTime createdAt, LocalDateTime updatedAt, CarNumber carNumber, UserAuthority authority) {
         this.userId = userId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;

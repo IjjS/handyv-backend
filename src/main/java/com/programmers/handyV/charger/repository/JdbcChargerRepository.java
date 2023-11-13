@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -24,10 +26,10 @@ import com.programmers.handyV.common.utils.UUIDConverter;
 public class JdbcChargerRepository implements ChargerRepository {
     private static final RowMapper<Charger> chargerRowMapper = (resultSet, i) -> mapToCharger(resultSet);
 
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public JdbcChargerRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    public JdbcChargerRepository(NamedParameterJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     private static Charger mapToCharger(ResultSet resultSet) throws SQLException {
@@ -46,8 +48,10 @@ public class JdbcChargerRepository implements ChargerRepository {
     @Override
     public Charger save(Charger charger) {
         String insertSQL = "INSERT INTO chargers(charger_id, created_at, updated_at, type, status, booked_at, station_id, user_id) VALUES (UUID_TO_BIN(:chargerId), :createdAt, :updatedAt, :chargerType, :chargerStatus, :bookedAt, UUID_TO_BIN(:stationId), UUID_TO_BIN(:userId))";
+        String updateSQL = "UPDATE chargers SET updated_at = :updatedAt, status = :chargerStatus, booked_at = :bookedAt, user_id = UUID_TO_BIN(:userId) WHERE charger_id = UUID_TO_BIN(:charger_id)";
+        String saveSQL = findById(charger.getChargerId()).isEmpty() ? insertSQL : updateSQL;
         Map<String, Object> parameterMap = toParameterMap(charger);
-        int saveCount = namedParameterJdbcTemplate.update(insertSQL, parameterMap);
+        int saveCount = jdbcTemplate.update(saveSQL, parameterMap);
         if (saveCount == 0) {
             throw new NoSuchElementException("충전기 저장을 실패했습니다.");
         }
@@ -57,13 +61,23 @@ public class JdbcChargerRepository implements ChargerRepository {
     @Override
     public List<Charger> findByStationId(UUID stationId) {
         String findByStationIdSQL = "SELECT * FROM chargers WHERE station_id = UUID_TO_BIN(:stationId)";
-        return namedParameterJdbcTemplate.query(findByStationIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), chargerRowMapper);
+        return jdbcTemplate.query(findByStationIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), chargerRowMapper);
+    }
+
+    @Override
+    public Optional<Charger> findById(UUID chargerId) {
+        String findByIdSQL = "SELECT * FROM chargers WHERE charger_id = UUID_TO_BIN(:chargerId)";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(findByIdSQL, Collections.singletonMap("chargerId", chargerId.toString().getBytes()), chargerRowMapper));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public void refreshStatus() {
         String refreshSQL = "UPDATE chargers SET status = 'AVAILABLE', booked_at = NULL WHERE booked_at IS NOT NULL AND booked_at <= now() - INTERVAL 10 MINUTE";
-        namedParameterJdbcTemplate.update(refreshSQL, Collections.emptyMap());
+        jdbcTemplate.update(refreshSQL, Collections.emptyMap());
     }
 
     private Map<String, Object> toParameterMap(Charger charger) {
