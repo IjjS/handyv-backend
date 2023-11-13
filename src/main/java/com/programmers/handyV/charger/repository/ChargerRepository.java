@@ -9,6 +9,8 @@ import com.programmers.handyV.charger.domain.Charger;
 public interface ChargerRepository {
     Charger save(Charger charger);
 
+    List<Charger> findAll();
+
     List<Charger> findByStationId(UUID stationId);
 
     Optional<Charger> findById(UUID chargerId);

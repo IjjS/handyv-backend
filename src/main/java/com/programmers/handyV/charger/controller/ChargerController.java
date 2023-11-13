@@ -1,6 +1,7 @@
 package com.programmers.handyV.charger.controller;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -34,8 +35,8 @@ public class ChargerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ChargerResponse>> findByStationId(@RequestParam UUID stationId) {
-        return ResponseEntity.ok(chargerService.findByStationId(stationId));
+    public ResponseEntity<List<ChargerResponse>> findAll(@RequestParam Optional<UUID> stationId) {
+        return ResponseEntity.ok(chargerService.enterFindAll(stationId));
     }
 
     @PostMapping("/{chargerId}")

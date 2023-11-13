@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -25,10 +26,10 @@ import com.programmers.handyV.user.domain.UserAuthority;
 public class JdbcUserRepository implements UserRepository {
     private static final RowMapper<User> userRowMapper = (resultSet, i) -> mapToUser(resultSet);
 
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public JdbcUserRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    public JdbcUserRepository(NamedParameterJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     private static User mapToUser(ResultSet resultSet) throws SQLException {
@@ -44,7 +45,7 @@ public class JdbcUserRepository implements UserRepository {
     public User save(User user) {
         String insertSQL = "INSERT INTO users(user_id, created_at, updated_at, car_number, authority) VALUES (UUID_TO_BIN(:userId), :createdAt, :updatedAt, :carNumber, :authority)";
         Map<String, Object> parameterMap = toParameterMap(user);
-        int saveCount = namedParameterJdbcTemplate.update(insertSQL, parameterMap);
+        int saveCount = jdbcTemplate.update(insertSQL, parameterMap);
         if (saveCount == 0) {
             throw new NoSuchElementException("유저 저장을 실패했습니다.");
         }
@@ -52,10 +53,16 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
+    public List<User> findAll() {
+        String findAllSQL = "SELECT * FROM users";
+        return jdbcTemplate.query(findAllSQL, userRowMapper);
+    }
+
+    @Override
     public Optional<User> findByCarNumber(CarNumber carNumber) {
         String findByCarNumberSQL = "SELECT * FROM users WHERE car_number = :carNumber";
         try {
-            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(findByCarNumberSQL, Collections.singletonMap("carNumber", carNumber.getFullNumber()), userRowMapper));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(findByCarNumberSQL, Collections.singletonMap("carNumber", carNumber.getFullNumber()), userRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }

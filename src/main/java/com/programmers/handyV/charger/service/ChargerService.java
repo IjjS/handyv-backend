@@ -2,6 +2,7 @@ package com.programmers.handyV.charger.service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -41,15 +42,21 @@ public class ChargerService {
     }
 
     @Transactional
-    public List<ChargerResponse> findByStationId(UUID stationId) {
-        refreshStatus();
-        List<Charger> chargers = chargerRepository.findByStationId(stationId);
+    public List<ChargerResponse> enterFindAll(Optional<UUID> stationId) {
+        chargerRepository.refreshStatus();
+        return stationId.isPresent() ? findByStationId(stationId.get()) : findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChargerResponse> findAll() {
+        List<Charger> chargers = chargerRepository.findAll();
         return ChargerResponse.listOf(chargers);
     }
 
-    @Transactional
-    public void refreshStatus() {
-        chargerRepository.refreshStatus();
+    @Transactional(readOnly = true)
+    public List<ChargerResponse> findByStationId(UUID stationId) {
+        List<Charger> chargers = chargerRepository.findByStationId(stationId);
+        return ChargerResponse.listOf(chargers);
     }
 
     @Transactional

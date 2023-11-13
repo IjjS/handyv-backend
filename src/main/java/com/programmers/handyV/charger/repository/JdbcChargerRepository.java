@@ -59,6 +59,12 @@ public class JdbcChargerRepository implements ChargerRepository {
     }
 
     @Override
+    public List<Charger> findAll() {
+        String findAllSQL = "SELECT * FROM chargers";
+        return jdbcTemplate.query(findAllSQL, chargerRowMapper);
+    }
+
+    @Override
     public List<Charger> findByStationId(UUID stationId) {
         String findByStationIdSQL = "SELECT * FROM chargers WHERE station_id = UUID_TO_BIN(:stationId)";
         return jdbcTemplate.query(findByStationIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), chargerRowMapper);
@@ -76,8 +82,8 @@ public class JdbcChargerRepository implements ChargerRepository {
 
     @Override
     public void refreshStatus() {
-        String refreshSQL = "UPDATE chargers SET status = 'AVAILABLE', booked_at = NULL WHERE booked_at IS NOT NULL AND booked_at <= now() - INTERVAL 10 MINUTE";
-        jdbcTemplate.update(refreshSQL, Collections.emptyMap());
+        String refreshSQL = "UPDATE chargers SET updated_at = :now, status = 'AVAILABLE', booked_at = NULL, user_id = NULL WHERE status = 'BOOKED' AND booked_at <= :now - INTERVAL 10 MINUTE";
+        jdbcTemplate.update(refreshSQL, Collections.singletonMap("now", LocalDateTime.now()));
     }
 
     private Map<String, Object> toParameterMap(Charger charger) {
