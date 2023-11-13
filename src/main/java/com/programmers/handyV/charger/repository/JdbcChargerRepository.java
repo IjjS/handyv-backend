@@ -1,22 +1,46 @@
 package com.programmers.handyV.charger.repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.programmers.handyV.charger.domain.Charger;
+import com.programmers.handyV.charger.domain.ChargerStatus;
+import com.programmers.handyV.charger.domain.ChargerType;
+import com.programmers.handyV.common.utils.UUIDConverter;
 
 @Repository
 public class JdbcChargerRepository implements ChargerRepository {
+    private static final RowMapper<Charger> chargerRowMapper = (resultSet, i) -> mapToCharger(resultSet);
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public JdbcChargerRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
+    private static Charger mapToCharger(ResultSet resultSet) throws SQLException {
+        UUID chargerId = UUIDConverter.from(resultSet.getBytes("charger_id"));
+        LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
+        LocalDateTime updatedAt = resultSet.getTimestamp("updated_at").toLocalDateTime();
+        String chargerTypeName = resultSet.getString("type");
+        ChargerType chargerType = ChargerType.findChargerTypeByName(chargerTypeName);
+        ChargerStatus chargerStatus = ChargerStatus.valueOf(resultSet.getString("status"));
+        LocalDateTime bookedAt = resultSet.getTimestamp("booked_at") != null ? resultSet.getTimestamp("booked_at").toLocalDateTime() : null;
+        UUID stationId = UUIDConverter.from(resultSet.getBytes("station_id"));
+        UUID userId = resultSet.getBytes("user_id") != null ? UUIDConverter.from(resultSet.getBytes("user_id")) : null;
+        return new Charger(chargerId, createdAt, updatedAt, chargerType, chargerStatus, bookedAt, stationId, userId);
     }
 
     @Override
@@ -28,6 +52,18 @@ public class JdbcChargerRepository implements ChargerRepository {
             throw new NoSuchElementException("충전기 저장을 실패했습니다.");
         }
         return charger;
+    }
+
+    @Override
+    public List<Charger> findByStationId(UUID stationId) {
+        String findByStationIdSQL = "SELECT * FROM chargers WHERE station_id = UUID_TO_BIN(:stationId)";
+        return namedParameterJdbcTemplate.query(findByStationIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), chargerRowMapper);
+    }
+
+    @Override
+    public void refreshStatus() {
+        String refreshSQL = "UPDATE chargers SET status = 'AVAILABLE', booked_at = NULL WHERE booked_at IS NOT NULL AND booked_at <= now() - INTERVAL 10 MINUTE";
+        namedParameterJdbcTemplate.update(refreshSQL, Collections.emptyMap());
     }
 
     private Map<String, Object> toParameterMap(Charger charger) {

@@ -1,9 +1,13 @@
 package com.programmers.handyV.charger.service;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import com.programmers.handyV.charger.domain.Charger;
 import com.programmers.handyV.charger.dto.request.CreateChargerRequest;
+import com.programmers.handyV.charger.dto.response.ChargerResponse;
 import com.programmers.handyV.charger.dto.response.CreateChargerResponse;
 import com.programmers.handyV.charger.repository.ChargerRepository;
 import com.programmers.handyV.station.domain.Station;
@@ -24,5 +28,11 @@ public class ChargerService {
         Charger charger = Charger.createCharger(request.chargerType(), station.getStationId());
         Charger savedCharger = chargerRepository.save(charger);
         return new CreateChargerResponse(savedCharger.getHashName(), station.getName());
+    }
+
+    public List<ChargerResponse> findByStationId(UUID stationId) {
+        chargerRepository.refreshStatus();
+        List<Charger> chargers = chargerRepository.findByStationId(stationId);
+        return ChargerResponse.listOf(chargers);
     }
 }
