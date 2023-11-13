@@ -62,6 +62,12 @@ public class JdbcStationRepository implements StationRepository {
     }
 
     @Override
+    public Station findById(UUID stationId) {
+        String findByIdSQL = "SELECT * FROM stations WHERE station_id = UUID_TO_BIN(:stationId)";
+        return namedParameterJdbcTemplate.queryForObject(findByIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), stationRowMapper);
+    }
+
+    @Override
     public Optional<Station> findByName(String name) {
         String findByNameSQL = "SELECT * FROM stations WHERE name = :name";
         try {

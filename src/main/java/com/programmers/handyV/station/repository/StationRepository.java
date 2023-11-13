@@ -2,6 +2,7 @@ package com.programmers.handyV.station.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.programmers.handyV.station.domain.Station;
 
@@ -11,6 +12,8 @@ public interface StationRepository {
     List<Station> findAll();
 
     List<Station> findByPartialName(String partialName);
+
+    Station findById(UUID stationId);
 
     Optional<Station> findByName(String name);
 
