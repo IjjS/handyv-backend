@@ -48,7 +48,7 @@ public class JdbcChargerRepository implements ChargerRepository {
     @Override
     public Charger save(Charger charger) {
         String insertSQL = "INSERT INTO chargers(charger_id, created_at, updated_at, type, status, booked_at, station_id, user_id) VALUES (UUID_TO_BIN(:chargerId), :createdAt, :updatedAt, :chargerType, :chargerStatus, :bookedAt, UUID_TO_BIN(:stationId), UUID_TO_BIN(:userId))";
-        String updateSQL = "UPDATE chargers SET updated_at = :updatedAt, status = :chargerStatus, booked_at = :bookedAt, user_id = UUID_TO_BIN(:userId) WHERE charger_id = UUID_TO_BIN(:charger_id)";
+        String updateSQL = "UPDATE chargers SET updated_at = :updatedAt, status = :chargerStatus, booked_at = :bookedAt, user_id = UUID_TO_BIN(:userId) WHERE charger_id = UUID_TO_BIN(:chargerId)";
         String saveSQL = findById(charger.getChargerId()).isEmpty() ? insertSQL : updateSQL;
         Map<String, Object> parameterMap = toParameterMap(charger);
         int saveCount = jdbcTemplate.update(saveSQL, parameterMap);
