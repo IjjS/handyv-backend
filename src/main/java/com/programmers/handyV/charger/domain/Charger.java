@@ -71,4 +71,11 @@ public class Charger {
         bookedAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
+
+    public void cancelBooking() {
+        chargerStatus = ChargerStatus.AVAILABLE;
+        userId = null;
+        bookedAt = null;
+        updatedAt = LocalDateTime.now();
+    }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.programmers.handyV.charger.dto.request.ConductBookingRequest;
+import com.programmers.handyV.charger.dto.request.BookingRequest;
 import com.programmers.handyV.charger.dto.request.CreateChargerRequest;
 import com.programmers.handyV.charger.dto.response.ChargerResponse;
 import com.programmers.handyV.charger.dto.response.ConductBookingResponse;
@@ -40,7 +41,14 @@ public class ChargerController {
     }
 
     @PostMapping("/{chargerId}")
-    public ResponseEntity<ConductBookingResponse> conductBooking(@PathVariable UUID chargerId, @ModelAttribute ConductBookingRequest request) {
+    public ResponseEntity<ConductBookingResponse> conductBooking(@PathVariable UUID chargerId,
+                                                                 @ModelAttribute BookingRequest request) {
         return ResponseEntity.ok(chargerService.conductBooking(chargerId, request));
+    }
+
+    @DeleteMapping("/{chargerId}/booking")
+    public ResponseEntity<ChargerResponse> cancelBooking(@PathVariable UUID chargerId,
+                                                         @ModelAttribute BookingRequest request) {
+        return ResponseEntity.ok(chargerService.cancelBooking(chargerId, request));
     }
 }

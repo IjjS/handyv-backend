@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.programmers.handyV.charger.domain.Charger;
-import com.programmers.handyV.charger.dto.request.ConductBookingRequest;
+import com.programmers.handyV.charger.dto.request.BookingRequest;
 import com.programmers.handyV.charger.dto.request.CreateChargerRequest;
 import com.programmers.handyV.charger.dto.response.ChargerResponse;
 import com.programmers.handyV.charger.dto.response.ConductBookingResponse;
@@ -60,7 +60,7 @@ public class ChargerService {
     }
 
     @Transactional
-    public ConductBookingResponse conductBooking(UUID chargerId, ConductBookingRequest request) {
+    public ConductBookingResponse conductBooking(UUID chargerId, BookingRequest request) {
         Charger charger = chargerRepository.findById(chargerId)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 충전기가 존재하지 않습니다."));
 
@@ -72,5 +72,27 @@ public class ChargerService {
 
         Charger savedCharger = chargerRepository.save(charger);
         return ConductBookingResponse.of(savedCharger, carNumber);
+    }
+
+    @Transactional
+    public ChargerResponse cancelBooking(UUID chargerId, BookingRequest request) {
+        Charger charger = chargerRepository.findById(chargerId)
+                .orElseThrow(() -> new NoSuchElementException("해당 ID의 충전기가 존재하지 않습니다."));
+
+        CarNumber carNumber = new CarNumber(request.frontNumber(), request.backNumber());
+        User user = userRepository.findByCarNumber(carNumber)
+                .orElseThrow(() -> new NoSuchElementException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
+        validateBookedUser(charger, user);
+
+        charger.cancelBooking();
+        Charger savedCharger = chargerRepository.save(charger);
+        return ChargerResponse.from(savedCharger);
+    }
+
+    private void validateBookedUser(Charger charger, User user) {
+        if (!charger.getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException(user.getCarFullNumber() + "의 차주 분은 "
+                    + charger.getHashName() + " 충전기를 예약하지 않았습니다.");
+        }
     }
 }
