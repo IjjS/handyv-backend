@@ -73,6 +73,10 @@ public class Charger {
         return getChargerTypeName() + "-" + chargerId.toString().substring(0, 4);
     }
 
+    public boolean isBooked() {
+        return chargerStatus == ChargerStatus.BOOKED;
+    }
+
     public void conductBooking(UUID userId) {
         chargerStatus = ChargerStatus.BOOKED;
         this.userId = userId;

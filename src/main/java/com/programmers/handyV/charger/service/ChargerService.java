@@ -61,8 +61,10 @@ public class ChargerService {
 
     @Transactional
     public ConductBookingResponse conductBooking(UUID chargerId, BookingRequest request) {
+        chargerRepository.refreshStatus();
         Charger charger = chargerRepository.findById(chargerId)
                 .orElseThrow(() -> new BadRequestException("해당 ID의 충전기가 존재하지 않습니다."));
+        validateChargerStatus(charger);
 
         CarNumber carNumber = new CarNumber(request.frontNumber(), request.backNumber());
         User user = userRepository.findByCarNumber(carNumber)
@@ -76,20 +78,27 @@ public class ChargerService {
 
     @Transactional
     public ChargerResponse cancelBooking(UUID chargerId, BookingRequest request) {
+        chargerRepository.refreshStatus();
         Charger charger = chargerRepository.findById(chargerId)
                 .orElseThrow(() -> new BadRequestException("해당 ID의 충전기가 존재하지 않습니다."));
 
         CarNumber carNumber = new CarNumber(request.frontNumber(), request.backNumber());
         User user = userRepository.findByCarNumber(carNumber)
                 .orElseThrow(() -> new BadRequestException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
-        validateBookedUser(charger, user);
+        validateBooker(charger, user);
 
         charger.cancelBooking();
         Charger savedCharger = chargerRepository.save(charger);
         return ChargerResponse.from(savedCharger);
     }
 
-    private void validateBookedUser(Charger charger, User user) {
+    private void validateChargerStatus(Charger charger) {
+        if (charger.isBooked()) {
+            throw new BadRequestException("이미 예약된 충전기입니다.");
+        }
+    }
+
+    private void validateBooker(Charger charger, User user) {
         if (!charger.getUserId().equals(user.getUserId())) {
             throw new BadRequestException(user.getCarFullNumber() + "의 차주 분은 "
                     + charger.getHashName() + " 충전기를 예약하지 않았습니다.");

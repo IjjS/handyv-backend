@@ -4,6 +4,8 @@ import com.programmers.handyV.charger.domain.Charger;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ChargerRepository {
     Charger save(Charger charger);
@@ -14,5 +16,6 @@ public interface ChargerRepository {
 
     Optional<Charger> findById(UUID chargerId);
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     void refreshStatus();
 }
