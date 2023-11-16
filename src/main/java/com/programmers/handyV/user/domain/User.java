@@ -6,11 +6,15 @@ import java.util.UUID;
 public class User {
     private final UUID userId;
     private final LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private CarNumber carNumber;
-    private UserAuthority authority;
+    private final LocalDateTime updatedAt;
+    private final CarNumber carNumber;
+    private final UserAuthority authority;
 
-    public User(UUID userId, LocalDateTime createdAt, LocalDateTime updatedAt, CarNumber carNumber, UserAuthority authority) {
+    public User(UUID userId,
+                LocalDateTime createdAt,
+                LocalDateTime updatedAt,
+                CarNumber carNumber,
+                UserAuthority authority) {
         this.userId = userId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;

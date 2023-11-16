@@ -6,8 +6,8 @@ import java.util.UUID;
 public class Station {
     private final UUID stationId;
     private final LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private String name;
+    private final LocalDateTime updatedAt;
+    private final String name;
 
     public Station(String name) {
         //TODO: validation

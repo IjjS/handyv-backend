@@ -25,7 +25,9 @@ public class ChargerService {
     private final StationRepository stationRepository;
     private final UserRepository userRepository;
 
-    public ChargerService(ChargerRepository chargerRepository, StationRepository stationRepository, UserRepository userRepository) {
+    public ChargerService(ChargerRepository chargerRepository,
+                          StationRepository stationRepository,
+                          UserRepository userRepository) {
         this.chargerRepository = chargerRepository;
         this.stationRepository = stationRepository;
         this.userRepository = userRepository;

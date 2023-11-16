@@ -1,5 +1,9 @@
 package com.programmers.handyV.user.repository;
 
+import com.programmers.handyV.common.utils.UUIDConverter;
+import com.programmers.handyV.user.domain.CarNumber;
+import com.programmers.handyV.user.domain.User;
+import com.programmers.handyV.user.domain.UserAuthority;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -11,16 +15,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-
-import com.programmers.handyV.common.utils.UUIDConverter;
-import com.programmers.handyV.user.domain.CarNumber;
-import com.programmers.handyV.user.domain.User;
-import com.programmers.handyV.user.domain.UserAuthority;
 
 @Repository
 public class JdbcUserRepository implements UserRepository {
@@ -62,7 +60,8 @@ public class JdbcUserRepository implements UserRepository {
     public Optional<User> findByCarNumber(CarNumber carNumber) {
         String findByCarNumberSQL = "SELECT * FROM users WHERE car_number = :carNumber";
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(findByCarNumberSQL, Collections.singletonMap("carNumber", carNumber.getFullNumber()), userRowMapper));
+            Map<String, Object> parameterMap = Collections.singletonMap("carNumber", carNumber.getFullNumber());
+            return Optional.ofNullable(jdbcTemplate.queryForObject(findByCarNumberSQL, parameterMap, userRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }

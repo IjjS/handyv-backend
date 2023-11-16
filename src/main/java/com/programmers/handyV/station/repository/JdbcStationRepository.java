@@ -1,5 +1,7 @@
 package com.programmers.handyV.station.repository;
 
+import com.programmers.handyV.common.utils.UUIDConverter;
+import com.programmers.handyV.station.domain.Station;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -11,14 +13,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-
-import com.programmers.handyV.common.utils.UUIDConverter;
-import com.programmers.handyV.station.domain.Station;
 
 @Repository
 public class JdbcStationRepository implements StationRepository {
@@ -58,20 +56,24 @@ public class JdbcStationRepository implements StationRepository {
     @Override
     public List<Station> findByPartialName(String partialName) {
         String findPartialNameSQL = "SELECT * FROM stations WHERE name LIKE :partialName";
-        return namedParameterJdbcTemplate.query(findPartialNameSQL, Collections.singletonMap("partialName", "%" + partialName + "%"), stationRowMapper);
+        Map<String, Object> parameterMap = Collections.singletonMap("partialName", "%" + partialName + "%");
+        return namedParameterJdbcTemplate.query(findPartialNameSQL, parameterMap, stationRowMapper);
     }
 
     @Override
     public Station findById(UUID stationId) {
         String findByIdSQL = "SELECT * FROM stations WHERE station_id = UUID_TO_BIN(:stationId)";
-        return namedParameterJdbcTemplate.queryForObject(findByIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), stationRowMapper);
+        Map<String, Object> parameterMap = Collections.singletonMap("stationId", stationId.toString().getBytes());
+        return namedParameterJdbcTemplate.queryForObject(findByIdSQL, parameterMap, stationRowMapper);
     }
 
     @Override
     public Optional<Station> findByName(String name) {
         String findByNameSQL = "SELECT * FROM stations WHERE name = :name";
         try {
-            return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(findByNameSQL, Collections.singletonMap("name", name), stationRowMapper));
+            Map<String, Object> parameterMap = Collections.singletonMap("name", name);
+            return Optional.ofNullable(
+                    namedParameterJdbcTemplate.queryForObject(findByNameSQL, parameterMap, stationRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }

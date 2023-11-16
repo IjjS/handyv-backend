@@ -1,5 +1,9 @@
 package com.programmers.handyV.charger.repository;
 
+import com.programmers.handyV.charger.domain.Charger;
+import com.programmers.handyV.charger.domain.ChargerStatus;
+import com.programmers.handyV.charger.domain.ChargerType;
+import com.programmers.handyV.common.utils.UUIDConverter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -11,16 +15,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-
-import com.programmers.handyV.charger.domain.Charger;
-import com.programmers.handyV.charger.domain.ChargerStatus;
-import com.programmers.handyV.charger.domain.ChargerType;
-import com.programmers.handyV.common.utils.UUIDConverter;
 
 @Repository
 public class JdbcChargerRepository implements ChargerRepository {
@@ -39,9 +37,11 @@ public class JdbcChargerRepository implements ChargerRepository {
         String chargerTypeName = resultSet.getString("type");
         ChargerType chargerType = ChargerType.findChargerTypeByName(chargerTypeName);
         ChargerStatus chargerStatus = ChargerStatus.valueOf(resultSet.getString("status"));
-        LocalDateTime bookedAt = resultSet.getTimestamp("booked_at") != null ? resultSet.getTimestamp("booked_at").toLocalDateTime() : null;
+        LocalDateTime bookedAt = resultSet.getTimestamp("booked_at") != null
+                ? resultSet.getTimestamp("booked_at").toLocalDateTime() : null;
         UUID stationId = UUIDConverter.from(resultSet.getBytes("station_id"));
-        UUID userId = resultSet.getBytes("user_id") != null ? UUIDConverter.from(resultSet.getBytes("user_id")) : null;
+        UUID userId = resultSet.getBytes("user_id") != null
+                ? UUIDConverter.from(resultSet.getBytes("user_id")) : null;
         return new Charger(chargerId, createdAt, updatedAt, chargerType, chargerStatus, bookedAt, stationId, userId);
     }
 
@@ -67,14 +67,16 @@ public class JdbcChargerRepository implements ChargerRepository {
     @Override
     public List<Charger> findByStationId(UUID stationId) {
         String findByStationIdSQL = "SELECT * FROM chargers WHERE station_id = UUID_TO_BIN(:stationId)";
-        return jdbcTemplate.query(findByStationIdSQL, Collections.singletonMap("stationId", stationId.toString().getBytes()), chargerRowMapper);
+        Map<String, Object> parameterMap = Collections.singletonMap("stationId", stationId.toString().getBytes());
+        return jdbcTemplate.query(findByStationIdSQL, parameterMap, chargerRowMapper);
     }
 
     @Override
     public Optional<Charger> findById(UUID chargerId) {
         String findByIdSQL = "SELECT * FROM chargers WHERE charger_id = UUID_TO_BIN(:chargerId)";
+        Map<String, Object> parameterMap = Collections.singletonMap("chargerId", chargerId.toString().getBytes());
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(findByIdSQL, Collections.singletonMap("chargerId", chargerId.toString().getBytes()), chargerRowMapper));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(findByIdSQL, parameterMap, chargerRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -83,7 +85,8 @@ public class JdbcChargerRepository implements ChargerRepository {
     @Override
     public void refreshStatus() {
         String refreshSQL = "UPDATE chargers SET updated_at = :now, status = 'AVAILABLE', booked_at = NULL, user_id = NULL WHERE status = 'BOOKED' AND booked_at <= :now - INTERVAL 10 MINUTE";
-        jdbcTemplate.update(refreshSQL, Collections.singletonMap("now", LocalDateTime.now()));
+        Map<String, Object> parameterMap = Collections.singletonMap("now", LocalDateTime.now());
+        jdbcTemplate.update(refreshSQL, parameterMap);
     }
 
     private Map<String, Object> toParameterMap(Charger charger) {
@@ -93,9 +96,11 @@ public class JdbcChargerRepository implements ChargerRepository {
         parameterMap.put("updatedAt", Timestamp.valueOf(charger.getUpdatedAt()));
         parameterMap.put("chargerType", charger.getChargerTypeName());
         parameterMap.put("chargerStatus", charger.getChargerStatus().name());
-        parameterMap.put("bookedAt", charger.getBookedAt() != null ? Timestamp.valueOf(charger.getBookedAt()) : null);
+        parameterMap.put("bookedAt", charger.getBookedAt() != null
+                ? Timestamp.valueOf(charger.getBookedAt()) : null);
         parameterMap.put("stationId", charger.getStationId().toString().getBytes());
-        parameterMap.put("userId", charger.getUserId() != null ? charger.getUserId().toString().getBytes() : null);
+        parameterMap.put("userId", charger.getUserId() != null
+                ? charger.getUserId().toString().getBytes() : null);
         return Collections.unmodifiableMap(parameterMap);
     }
 }

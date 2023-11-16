@@ -13,7 +13,14 @@ public class Charger {
     private LocalDateTime bookedAt;
     private UUID userId;
 
-    public Charger(UUID chargerId, LocalDateTime createdAt, LocalDateTime updatedAt, ChargerType chargerType, ChargerStatus chargerStatus, LocalDateTime bookedAt, UUID stationId, UUID userId) {
+    public Charger(UUID chargerId,
+                   LocalDateTime createdAt,
+                   LocalDateTime updatedAt,
+                   ChargerType chargerType,
+                   ChargerStatus chargerStatus,
+                   LocalDateTime bookedAt,
+                   UUID stationId,
+                   UUID userId) {
         this.chargerId = chargerId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
