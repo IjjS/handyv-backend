@@ -1,5 +1,6 @@
 package com.programmers.handyV.charger.domain;
 
+import com.programmers.handyV.common.exception.BadRequestException;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -18,7 +19,7 @@ public enum ChargerType {
         return Arrays.stream(ChargerType.values())
                 .filter(chargerType -> chargerType.isMatching(name))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("잘못된 충전기 타입입니다."));
+                .orElseThrow(() -> new BadRequestException("잘못된 충전기 타입입니다."));
     }
 
     public String displayName() {

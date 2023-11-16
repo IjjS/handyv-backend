@@ -26,7 +26,8 @@ public class Charger {
 
     public static Charger createCharger(String chargerTypeInput, UUID stationId) {
         ChargerType chargerType = ChargerType.findChargerTypeByName(chargerTypeInput);
-        return new Charger(UUID.randomUUID(), LocalDateTime.now(), LocalDateTime.now(), chargerType, ChargerStatus.AVAILABLE, null, stationId, null);
+        return new Charger(UUID.randomUUID(), LocalDateTime.now(), LocalDateTime.now(),
+                chargerType, ChargerStatus.AVAILABLE, null, stationId, null);
     }
 
     public UUID getChargerId() {
@@ -62,7 +63,7 @@ public class Charger {
     }
 
     public String getHashName() {
-        return getChargerTypeName() + " " + chargerId.toString().substring(0, 4);
+        return getChargerTypeName() + "-" + chargerId.toString().substring(0, 4);
     }
 
     public void conductBooking(UUID userId) {

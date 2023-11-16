@@ -1,13 +1,5 @@
 package com.programmers.handyV.charger.service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.programmers.handyV.charger.domain.Charger;
 import com.programmers.handyV.charger.dto.request.BookingRequest;
 import com.programmers.handyV.charger.dto.request.CreateChargerRequest;
@@ -15,11 +7,17 @@ import com.programmers.handyV.charger.dto.response.ChargerResponse;
 import com.programmers.handyV.charger.dto.response.ConductBookingResponse;
 import com.programmers.handyV.charger.dto.response.CreateChargerResponse;
 import com.programmers.handyV.charger.repository.ChargerRepository;
+import com.programmers.handyV.common.exception.BadRequestException;
 import com.programmers.handyV.station.domain.Station;
 import com.programmers.handyV.station.repository.StationRepository;
 import com.programmers.handyV.user.domain.CarNumber;
 import com.programmers.handyV.user.domain.User;
 import com.programmers.handyV.user.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChargerService {
@@ -62,11 +60,11 @@ public class ChargerService {
     @Transactional
     public ConductBookingResponse conductBooking(UUID chargerId, BookingRequest request) {
         Charger charger = chargerRepository.findById(chargerId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ID의 충전기가 존재하지 않습니다."));
+                .orElseThrow(() -> new BadRequestException("해당 ID의 충전기가 존재하지 않습니다."));
 
         CarNumber carNumber = new CarNumber(request.frontNumber(), request.backNumber());
         User user = userRepository.findByCarNumber(carNumber)
-                .orElseThrow(() -> new NoSuchElementException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
+                .orElseThrow(() -> new BadRequestException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
 
         charger.conductBooking(user.getUserId());
 
@@ -77,11 +75,11 @@ public class ChargerService {
     @Transactional
     public ChargerResponse cancelBooking(UUID chargerId, BookingRequest request) {
         Charger charger = chargerRepository.findById(chargerId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ID의 충전기가 존재하지 않습니다."));
+                .orElseThrow(() -> new BadRequestException("해당 ID의 충전기가 존재하지 않습니다."));
 
         CarNumber carNumber = new CarNumber(request.frontNumber(), request.backNumber());
         User user = userRepository.findByCarNumber(carNumber)
-                .orElseThrow(() -> new NoSuchElementException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
+                .orElseThrow(() -> new BadRequestException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
         validateBookedUser(charger, user);
 
         charger.cancelBooking();
