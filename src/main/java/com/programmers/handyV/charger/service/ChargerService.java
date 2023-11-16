@@ -91,7 +91,7 @@ public class ChargerService {
 
     private void validateBookedUser(Charger charger, User user) {
         if (!charger.getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException(user.getCarFullNumber() + "의 차주 분은 "
+            throw new BadRequestException(user.getCarFullNumber() + "의 차주 분은 "
                     + charger.getHashName() + " 충전기를 예약하지 않았습니다.");
         }
     }
