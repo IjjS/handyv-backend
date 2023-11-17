@@ -1,6 +1,6 @@
 package com.programmers.handyV.station.repository;
 
-import com.programmers.handyV.common.utils.UUIDConverter;
+import com.programmers.handyV.common.utils.JdbcUtils;
 import com.programmers.handyV.station.domain.Station;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ public class JdbcStationRepository implements StationRepository {
     }
 
     private static Station mapToStation(ResultSet resultSet) throws SQLException {
-        UUID stationId = UUIDConverter.from(resultSet.getBytes("station_id"));
+        UUID stationId = JdbcUtils.toUUID(resultSet.getBytes("station_id"));
         LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
         LocalDateTime updatedAt = resultSet.getTimestamp("updated_at").toLocalDateTime();
         String name = resultSet.getString("name");
@@ -38,7 +38,8 @@ public class JdbcStationRepository implements StationRepository {
 
     @Override
     public Station save(Station station) {
-        String insertSQL = "INSERT INTO stations(station_id, created_at, updated_at, name) VALUES (UUID_TO_BIN(:stationId), :createdAt, :updatedAt, :name)";
+        String insertSQL = "INSERT INTO stations(station_id, created_at, updated_at, name)"
+                + "VALUES (UUID_TO_BIN(:stationId), :createdAt, :updatedAt, :name)";
         Map<String, Object> paramaterMap = toParamaterMap(station);
         int saveCount = namedParameterJdbcTemplate.update(insertSQL, paramaterMap);
         if (saveCount == 0) {
@@ -81,7 +82,7 @@ public class JdbcStationRepository implements StationRepository {
 
     private Map<String, Object> toParamaterMap(Station station) {
         Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("stationId", station.getStationId().toString().getBytes());
+        parameterMap.put("stationId", JdbcUtils.toBinary(station.getStationId()));
         parameterMap.put("createdAt", Timestamp.valueOf(station.getCreatedAt()));
         parameterMap.put("updatedAt", Timestamp.valueOf(station.getUpdatedAt()));
         parameterMap.put("name", station.getName());

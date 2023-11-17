@@ -1,6 +1,6 @@
 package com.programmers.handyV.user.repository;
 
-import com.programmers.handyV.common.utils.UUIDConverter;
+import com.programmers.handyV.common.utils.JdbcUtils;
 import com.programmers.handyV.user.domain.CarNumber;
 import com.programmers.handyV.user.domain.User;
 import com.programmers.handyV.user.domain.UserAuthority;
@@ -31,7 +31,7 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     private static User mapToUser(ResultSet resultSet) throws SQLException {
-        UUID userId = UUIDConverter.from(resultSet.getBytes("user_id"));
+        UUID userId = JdbcUtils.toUUID(resultSet.getBytes("user_id"));
         LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
         LocalDateTime updatedAt = resultSet.getTimestamp("updated_at").toLocalDateTime();
         CarNumber carNumber = new CarNumber(resultSet.getString("car_number"));
@@ -41,7 +41,8 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        String insertSQL = "INSERT INTO users(user_id, created_at, updated_at, car_number, authority) VALUES (UUID_TO_BIN(:userId), :createdAt, :updatedAt, :carNumber, :authority)";
+        String insertSQL = "INSERT INTO users(user_id, created_at, updated_at, car_number, authority)"
+                + "VALUES (UUID_TO_BIN(:userId), :createdAt, :updatedAt, :carNumber, :authority)";
         Map<String, Object> parameterMap = toParameterMap(user);
         int saveCount = jdbcTemplate.update(insertSQL, parameterMap);
         if (saveCount == 0) {
@@ -69,7 +70,7 @@ public class JdbcUserRepository implements UserRepository {
 
     private Map<String, Object> toParameterMap(User user) {
         Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("userId", user.getUserId().toString().getBytes());
+        parameterMap.put("userId", JdbcUtils.toBinary(user.getUserId()));
         parameterMap.put("createdAt", Timestamp.valueOf(user.getCreatedAt()));
         parameterMap.put("updatedAt", Timestamp.valueOf(user.getUpdatedAt()));
         parameterMap.put("carNumber", user.getCarFullNumber());
