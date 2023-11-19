@@ -21,7 +21,10 @@ public class UserService {
 
     @Transactional
     public CreateUserResponse create(CreateUserRequest request) {
-        User user = User.createNormalUser(request.frontNumber(), request.backNumber());
+        User user = request.isAdmin()
+                ? User.createAdminUser(request.frontNumber(), request.backNumber())
+                : User.createNormalUser(request.frontNumber(), request.backNumber());
+        validateDuplicateCarNumber(user.getCarFullNumber());
         User savedUser = userRepository.save(user);
         return CreateUserResponse.from(savedUser);
     }
@@ -38,5 +41,12 @@ public class UserService {
         User user = userRepository.findByCarNumber(carNumber)
                 .orElseThrow(() -> new BadRequestException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
         return UserResponse.from(user);
+    }
+
+    private void validateDuplicateCarNumber(String fullNumber) {
+        CarNumber carNumber = new CarNumber(fullNumber);
+        if (userRepository.existsByCarNumber(carNumber)) {
+            throw new BadRequestException(fullNumber + "의 차 번호로 등록된 사용자가 있습니다");
+        }
     }
 }

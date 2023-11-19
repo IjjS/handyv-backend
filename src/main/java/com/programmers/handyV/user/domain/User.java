@@ -28,7 +28,8 @@ public class User {
         return new User(UUID.randomUUID(), LocalDateTime.now(), LocalDateTime.now(), carNumber, UserAuthority.NORMAL);
     }
 
-    public static User createAdminUser(CarNumber carNumber) {
+    public static User createAdminUser(String frontNumber, String backNumber) {
+        CarNumber carNumber = new CarNumber(frontNumber, backNumber);
         return new User(UUID.randomUUID(), LocalDateTime.now(), LocalDateTime.now(), carNumber, UserAuthority.ADMIN);
     }
 
