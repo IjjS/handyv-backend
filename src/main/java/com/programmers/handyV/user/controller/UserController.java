@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,5 +30,10 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserResponse>> findAll() {
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/car-number/{carNumber}")
+    public ResponseEntity<UserResponse> findByCarNumber(@PathVariable String carNumber) {
+        return ResponseEntity.ok(userService.findByCarNumber(carNumber));
     }
 }

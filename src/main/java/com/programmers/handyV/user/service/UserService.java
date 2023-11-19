@@ -1,5 +1,7 @@
 package com.programmers.handyV.user.service;
 
+import com.programmers.handyV.common.exception.BadRequestException;
+import com.programmers.handyV.user.domain.CarNumber;
 import com.programmers.handyV.user.domain.User;
 import com.programmers.handyV.user.dto.request.CreateUserRequest;
 import com.programmers.handyV.user.dto.response.CreateUserResponse;
@@ -28,5 +30,13 @@ public class UserService {
     public List<UserResponse> findAll() {
         List<User> users = userRepository.findAll();
         return UserResponse.listOf(users);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse findByCarNumber(String fullNumber) {
+        CarNumber carNumber = new CarNumber(fullNumber);
+        User user = userRepository.findByCarNumber(carNumber)
+                .orElseThrow(() -> new BadRequestException(carNumber.getFullNumber() + "의 번호로 등록된 차량이 없습니다."));
+        return UserResponse.from(user);
     }
 }
