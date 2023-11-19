@@ -11,4 +11,8 @@ public interface UserRepository {
     List<User> findAll();
 
     Optional<User> findByCarNumber(CarNumber carNumber);
+
+    default boolean existsByCarNumber(CarNumber carNumber) {
+        return findByCarNumber(carNumber).isPresent();
+    }
 }
